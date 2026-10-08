@@ -7,29 +7,45 @@ use App\Http\Requests\BulkStoreUsersRequest;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    public function index(): JsonResponse
+    private const DEFAULT_PER_PAGE = 50;
+    private const MAX_PER_PAGE = 200;
+
+    private function perPage(Request $request): int
     {
-        return response()->json(User::all());
+        $perPage = (int) $request->query('per_page', self::DEFAULT_PER_PAGE);
+
+        return max(1, min($perPage, self::MAX_PER_PAGE));
     }
 
-    public function emails(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(User::all(['id', 'email']));
+        return response()->json(
+            User::orderBy('id')->paginate($this->perPage($request))
+        );
     }
 
-    public function overTwenty(): JsonResponse
+    public function emails(Request $request): JsonResponse
+    {
+        return response()->json(
+            User::select('id', 'email')->orderBy('id')->paginate($this->perPage($request))
+        );
+    }
+
+    public function overTwenty(Request $request): JsonResponse
     {
         $cutoff = Carbon::now()->subYears(20)->startOfDay();
 
-        $users = User::all()->filter(
-            fn (User $user) => $user->birth_date && $user->birth_date->lte($cutoff)
-        )->values();
+        $page = User::where('birth_date', '<=', $cutoff->toDateString())
+            ->orderBy('id')
+            ->paginate($this->perPage($request))
+            ->toArray();
 
-        return response()->json($users);
+        return response()->json(['cutoff_date' => $cutoff->toDateString()] + $page);
     }
 
     public function bulkStore(BulkStoreUsersRequest $request): JsonResponse

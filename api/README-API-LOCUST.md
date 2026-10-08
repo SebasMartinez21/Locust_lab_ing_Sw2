@@ -56,12 +56,12 @@ Base URL: `http://HOST:PUERTO/api`
 
 Los tres GET usan `User::all()` (en `over-twenty` se filtra en memoria tras cargar todo). Devuelven un arreglo JSON con todos los registros. Con 1.5M filas provoca timeouts, 500 por memoria o respuestas enormes. **Es intencional:** parte del laboratorio es corregirlo.
 
-| Método | Ruta | Comportamiento actual |
-|--------|------|------------------------|
-| GET | `/users` | `User::all()` |
-| GET | `/users/emails` | `User::all(['id', 'email'])` |
-| GET | `/users/over-twenty` | `User::all()` + filtro en PHP por edad |
-| POST | `/users/bulk` | Crea **exactamente 3** usuarios (sin cambios) |
+| Método | Ruta                   | Comportamiento actual                              |
+| ------- | ---------------------- | -------------------------------------------------- |
+| GET     | `/users`             | `User::all()`                                    |
+| GET     | `/users/emails`      | `User::all(['id', 'email'])`                     |
+| GET     | `/users/over-twenty` | `User::all()` + filtro en PHP por edad           |
+| POST    | `/users/bulk`        | Crea**exactamente 3** usuarios (sin cambios) |
 
 Archivo a modificar: `app/Http/Controllers/Api/UserController.php`.
 
